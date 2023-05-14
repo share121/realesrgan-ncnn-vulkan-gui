@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply h-full bg-white text-slate-500 antialiased dark:bg-slate-900 dark:text-slate-400;
+  }
+  #app {
+    @apply h-full;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+    @apply box-border scroll-smooth transition-all;
+  }
+  html {
+    @apply h-full leading-6;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+  }
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
