@@ -15,6 +15,7 @@ declare module '@vue/runtime-core' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SolarCloudUploadLinear: typeof import('~icons/solar/cloud-upload-linear')['default']
+    SolarInfoCircleLinear: typeof import('~icons/solar/info-circle-linear')['default']
     SolarPauseLinear: typeof import('~icons/solar/pause-linear')['default']
     SolarPlayLinear: typeof import('~icons/solar/play-linear')['default']
     SolarTrashBin2Linear: typeof import('~icons/solar/trash-bin2-linear')['default']

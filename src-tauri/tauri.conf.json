@@ -7,13 +7,13 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "图像超分",
+    "productName": "realesrgan-ncnn-vulkan-gui",
     "version": "0.0.0"
   },
   "tauri": {
     "allowlist": {
-      "shell": {
-        "all": true
+      "window": {
+        "show": true
       },
       "dialog": {
         "open": true
@@ -35,7 +35,8 @@
       "targets": "all",
       "windows": {
         "nsis": {
-          "languages": ["SimpChinese"]
+          "languages": ["SimpChinese"],
+          "displayLanguageSelector": true
         },
         "wix": {
           "language": "zh-CN"
@@ -54,7 +55,8 @@
         "resizable": true,
         "title": "图像超分",
         "width": 470,
-        "height": 760
+        "height": 760,
+        "visible": false
       }
     ]
   }

@@ -1,16 +1,28 @@
-# Tauri + Vue 3 + TypeScript
+# 图像超分
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## 描述
 
-## Recommended IDE Setup
+这是一个软件用来无损放大图片，支持多种图片和视频以及在线视频的无损放大
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## 效果
 
-## Type Support For `.vue` Imports in TS
+![对比图](对比图.png)
 
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's Take Over mode by following these steps:
+## 优点
 
-1. Run `Extensions: Show Built-in Extensions` from VS Code's command palette, look for `TypeScript and JavaScript Language Features`, then right click and select `Disable (Workspace)`. By default, Take Over mode will enable itself if the default TypeScript extension is disabled.
-2. Reload the VS Code window by running `Developer: Reload Window` from the command palette.
+- 简单易用，简洁的界面，只要轻点几下就可以了实现图片无损放大
+- 支持多种格式，可以处理图片、视频、甚至是在线视频
+- 开源免费，永远不用担心他有一天会收费
+- 十分轻量，1.67MB 的大小，却有着强大的功能
+- 快如闪电，充分利用 GPU 和多线程，拥有极快的速度
+- 十分安全，端侧计算，数据均在本地处理，保护用户隐私
+- 功能强大，支持多种放大算法，无论应对什么样的图片都能完美处理
 
-You can learn more about Take Over mode [here](https://github.com/johnsoncodehk/volar/discussions/471).
+## 开发过程
+
+使用多种技术，包括 Vite、Vue3、TypeScript、Rust、Tauri、HTML、CSS、Vue Router、Pinia、Gsap、PostCSS、TailwindCSS 等多达 12 门技术栈。使用 TypeScript 和 Rust 混合开发，充分保证其安全性、稳定性和可扩展性。并且使用最新人工智能深度学习技术——深度卷积神经网络。它会将噪点和锯齿的部分进行补充，实现图片的无损放大。针对放大图片的线条、颜色、网点等特点，做特殊的算法调整，所以放大效果非常出色，色彩保留较好，图片边缘也不会有毛刺和重影。更重要的是，影响画质的噪点基本在放大的图片上看不出来。
+
+## 应用
+
+- 在 AIGC 方面有重大应用，对 AI 绘画有着深远影响
+- 对视频工作者、游戏工作者都有帮助
