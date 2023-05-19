@@ -5,7 +5,6 @@ use base64::{engine::general_purpose, Engine as _};
 use std::{
     fs::File,
     io::{prelude::*, BufRead, BufReader},
-    os::windows::process::CommandExt,
     process::{Command, Stdio},
     sync::{Arc, Mutex},
     thread,
@@ -36,7 +35,11 @@ fn start_realesrgan_ncnn_vulkan(
     model_name: &str,
 ) -> Command {
     let mut command = Command::new(path);
-    command.creation_flags(0x08000000).args([
+    if cfg!(target_os = "windows") {
+        use std::os::windows::process::CommandExt;
+        command.creation_flags(0x08000000);
+    }
+    command.args([
         "-i",
         input_path,
         "-o",
