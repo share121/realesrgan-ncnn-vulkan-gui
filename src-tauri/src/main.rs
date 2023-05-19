@@ -38,6 +38,7 @@ fn start_realesrgan_ncnn_vulkan(
     if cfg!(target_os = "windows") {
         #[cfg(target_os = "windows")]
         use std::os::windows::process::CommandExt;
+        #[cfg(target_os = "windows")]
         command.creation_flags(0x08000000);
     }
     command.args([
