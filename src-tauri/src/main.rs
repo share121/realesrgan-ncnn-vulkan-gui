@@ -31,11 +31,12 @@ fn start_realesrgan_ncnn_vulkan(
     path: &str,
     input_path: &str,
     output_path: &str,
-    scale: u8,
+    scale: &str,
     model_name: &str,
 ) -> Command {
     let mut command = Command::new(path);
     if cfg!(target_os = "windows") {
+        #[cfg(target_os = "windows")]
         use std::os::windows::process::CommandExt;
         command.creation_flags(0x08000000);
     }
@@ -58,7 +59,7 @@ async fn start_work(
     realesrgan_ncnn_vulkan_path: String,
     input_path: String,
     output_path: String,
-    scale: u8,
+    scale: String,
     model_name: String,
     id: String,
 ) -> Result<(), String> {
@@ -66,7 +67,7 @@ async fn start_work(
         &realesrgan_ncnn_vulkan_path,
         &input_path,
         &output_path,
-        scale,
+        &scale,
         &model_name,
     );
     let child = Arc::new(Mutex::new(

@@ -47,7 +47,7 @@ async function startWork(id: number) {
         realesrganNcnnVulkanPath: realesrganNcnnVulkanDir.value,
         inputPath: path,
         outputPath: await resolve(outputDir.value, await basename(path)),
-        scale: +scale.value,
+        scale: scale.value,
         modelName: modelName.value,
         id: id_temp
       })
@@ -150,6 +150,7 @@ async function setRealesrganNcnnVulkanPath() {
   if (selected) realesrganNcnnVulkanDir.value = selected as string
 }
 const fileInput: Ref<HTMLElement | null> = ref(null)
+const outputDirEl: Ref<HTMLElement | null> = ref(null)
 const { x, y } = useMouse({ type: 'client' })
 const { element } = useElementByPoint({ x, y })
 function wait(timeout = 0) {
@@ -188,6 +189,9 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
       }
     })
   }
+  if (element.value === outputDirEl.value) {
+    outputDir.value = selected[0]
+  }
   console.log(payload, files)
 })
 </script>
@@ -223,7 +227,7 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
         <label class="block text-sm text-gray-500 dark:text-gray-300">
           放大倍数
           <select
-            v-model.number="scale"
+            v-model="scale"
             class="mt-2 block w-full appearance-none rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
           >
             <option value="2">2x</option>
@@ -251,6 +255,7 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
           输出路径
           <input
             v-model="outputDir"
+            ref="outputDirEl"
             @dblclick="setSavePath"
             type="text"
             placeholder="输出文件夹的路径"
