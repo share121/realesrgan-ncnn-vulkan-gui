@@ -61,7 +61,8 @@
         "title": "图像超分",
         "width": 470,
         "height": 760,
-        "visible": false
+        "visible": false,
+        "center": true
       }
     ]
   }

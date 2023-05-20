@@ -13,11 +13,6 @@ const { scale, modelName, outputDir } = storeToRefs(useConfigStore())
 
 window.addEventListener('load', async () => {
   appWindow.show()
-  console.log((await resolveResource(`resources/models/`)).replace(/^\\\\\?\\/, ''))
-  let os = await osType()
-  console.log(
-    await resolveResource(`resources/realesrgan-${os}${os === 'Windows_NT' ? '.exe' : ''}`)
-  )
 })
 
 async function startWork(id: number) {
@@ -148,7 +143,6 @@ async function uploadFiles() {
       }, i * 100)
     })
   }
-  console.log(files)
 }
 function deleteFile(id: number) {
   const start = files.findIndex((e) => e.id === id)
@@ -183,7 +177,6 @@ function wait(timeout = 0) {
 appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
   await wait(100)
   let selected = payload as unknown as string[]
-  console.log(x.value, y.value, element.value)
   if (element.value === fileInput.value) {
     selected.forEach(async (e, i) => {
       let type = mime.getType(await extname(e)) ?? ''
@@ -217,7 +210,6 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
   if (element.value === outputDirEl.value) {
     outputDir.value = selected[0]
   }
-  console.log(payload, files)
 })
 appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
   files.forEach((e) => e.isWorking && startWork(e.id))
