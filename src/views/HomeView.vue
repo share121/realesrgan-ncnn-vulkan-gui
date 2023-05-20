@@ -218,7 +218,32 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
 </script>
 
 <template>
-  <main class="flex h-full flex-col gap-4 overflow-auto py-5">
+  <teleport to="body">
+    <div
+      data-tauri-drag-region
+      class="fixed left-0 right-0 top-0 flex h-8 justify-end bg-white dark:bg-gray-900"
+    >
+      <div
+        @click="appWindow.minimize()"
+        class="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
+      >
+        <solar-minimize-linear></solar-minimize-linear>
+      </div>
+      <div
+        @click="appWindow.toggleMaximize()"
+        class="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
+      >
+        <solar-maximize-linear></solar-maximize-linear>
+      </div>
+      <div
+        @click="appWindow.close()"
+        class="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-pink-500 hover:text-white dark:hover:bg-pink-600"
+      >
+        <solar-close-circle-linear></solar-close-circle-linear>
+      </div>
+    </div>
+  </teleport>
+  <main class="flex h-full flex-col gap-4 overflow-auto pb-5 pt-10">
     <!-- 上传文件 -->
     <div class="mx-5">
       <label
@@ -232,7 +257,7 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
         <input
           @click.prevent="uploadFiles"
           ref="fileInput"
-          title=""
+          title="可批量上传、拖拽上传，支持视频、图片"
           type="file"
           class="absolute left-0 top-0 h-full w-full cursor-pointer opacity-0"
           multiple
@@ -251,7 +276,7 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
           </div>
           <select
             v-model="modelName"
-            class="block w-full appearance-none rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
+            class="block w-full appearance-none rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 outline-none transition-all focus:border-blue-400 focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
           >
             <option value="realesr-animevideov3">realesr-animevideov3 - 快速</option>
             <option value="realesrgan-x4plus">realesrgan-x4plus - 处理一般图片</option>
@@ -266,7 +291,7 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
           </div>
           <select
             v-model="scale"
-            class="block w-full appearance-none rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
+            class="block w-full appearance-none rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 outline-none transition-all focus:border-blue-400 focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
           >
             <option value="2" v-if="modelName === 'realesr-animevideov3'">2x</option>
             <option value="3" v-if="modelName === 'realesr-animevideov3'">3x</option>
@@ -279,7 +304,7 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
           <div class="flex items-center gap-1">
             <div>输出路径</div>
             <div
-              class="flex cursor-pointer items-center hover:text-pink-600 dark:hover:text-pink-500"
+              class="flex cursor-pointer items-center transition-all hover:text-pink-600 dark:hover:text-pink-500"
               title="请选择文件夹"
               v-if="!outputDirIsOk"
             >
@@ -293,12 +318,12 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
             type="text"
             placeholder="输出文件夹的路径"
             title="输出文件夹的路径，双击选择路径，支持拖拽上传"
-            class="block w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
+            class="block w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 outline-none transition-all focus:border-blue-400 focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
           />
         </label>
       </div>
       <button
-        class="col-span-full transform rounded-lg bg-blue-600 px-6 py-2 font-medium capitalize tracking-wide text-white transition-colors duration-300 hover:bg-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80"
+        class="col-span-full transform rounded-lg bg-blue-600 px-6 py-2 font-medium capitalize tracking-wide text-white outline-none transition-all duration-300 hover:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-80"
         @click="files.forEach((e) => startWork(e.id))"
       >
         全部启动
@@ -317,7 +342,7 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
         <div
           v-for="file in files"
           :key="file.id"
-          class="flex items-center justify-between gap-4 rounded-xl p-5 hover:bg-gray-50 dark:hover:bg-gray-800"
+          class="flex items-center justify-between gap-4 rounded-xl p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <!-- 预览图 -->
           <div
@@ -328,13 +353,13 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
               v-if="file.stype === 'image'"
               :src="file.base64 as unknown as string"
               :alt="file.path"
-              class="h-full w-full object-cover opacity-0"
+              class="h-full w-full object-cover opacity-0 transition-opacity"
               @load=";($event.target as HTMLElement).style.opacity = '1'"
             />
             <video
               v-else-if="file.stype === 'video'"
               :src="file.base64 as unknown as string"
-              class="h-full w-full object-cover opacity-0"
+              class="h-full w-full object-cover opacity-0 transition-opacity"
               preload="metadata"
               @loadedmetadata=";($event.target as HTMLElement).style.opacity = '1'"
             >
@@ -357,7 +382,7 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
                   'bg-pink-500': file.errMsg,
                   'dark:bg-pink-600': file.errMsg
                 }"
-                :style="{ width: file.progress * 100 + '%' }"
+                :style="{ width: file.tweened.number + '%' }"
               ></div>
             </div>
           </div>
@@ -365,21 +390,21 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
           <!-- 操作 -->
           <div class="flex gap-2">
             <div
-              class="flex cursor-pointer items-center p-1 text-xl hover:text-pink-600 dark:hover:text-pink-500"
+              class="flex cursor-pointer items-center p-1 text-xl transition-colors hover:text-pink-600 dark:hover:text-pink-500"
               :title="file.errMsg"
               v-if="file.errMsg"
             >
               <solar-info-circle-linear></solar-info-circle-linear>
             </div>
             <div
-              class="flex cursor-pointer items-center p-1 text-xl hover:text-pink-600 dark:hover:text-pink-500"
+              class="flex cursor-pointer items-center p-1 text-xl transition-colors hover:text-pink-600 dark:hover:text-pink-500"
               title="删除"
               @click="deleteFile(file.id)"
             >
               <solar-trash-bin-2-linear></solar-trash-bin-2-linear>
             </div>
             <div
-              class="flex cursor-pointer items-center p-1 hover:text-blue-600 dark:hover:text-blue-500"
+              class="flex cursor-pointer items-center p-1 transition-colors hover:text-blue-600 dark:hover:text-blue-500"
               :title="file.isWorking ? '暂停' : '开始'"
               @click="startWork(file.id)"
             >

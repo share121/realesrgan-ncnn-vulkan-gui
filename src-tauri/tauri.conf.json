@@ -13,8 +13,14 @@
   "tauri": {
     "allowlist": {
       "window": {
+        "close": true,
+        "hide": true,
         "show": true,
-        "close": true
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
       },
       "dialog": {
         "open": true
@@ -59,6 +65,7 @@
         "fullscreen": false,
         "resizable": true,
         "title": "图像超分",
+        "decorations": false,
         "width": 470,
         "height": 760,
         "visible": false,

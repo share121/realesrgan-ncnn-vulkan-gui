@@ -4,14 +4,14 @@
 
 @layer base {
   body {
-    @apply h-full bg-white text-slate-500 antialiased dark:bg-slate-900 dark:text-slate-400;
+    @apply h-full bg-white text-gray-500 antialiased dark:bg-gray-900 dark:text-gray-400;
   }
   #app {
     @apply h-full;
   }
   * {
     -webkit-tap-highlight-color: transparent;
-    @apply box-border select-none scroll-smooth transition-all;
+    @apply box-border select-none scroll-smooth;
   }
   html {
     @apply h-full leading-6;
