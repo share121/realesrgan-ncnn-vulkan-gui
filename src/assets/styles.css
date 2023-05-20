@@ -11,7 +11,7 @@
   }
   * {
     -webkit-tap-highlight-color: transparent;
-    @apply box-border scroll-smooth transition-all;
+    @apply box-border select-none scroll-smooth transition-all;
   }
   html {
     @apply h-full leading-6;

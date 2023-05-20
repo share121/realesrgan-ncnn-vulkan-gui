@@ -5,6 +5,7 @@ use base64::{engine::general_purpose, Engine as _};
 use std::{
     fs::File,
     io::{prelude::*, BufRead, BufReader},
+    path::Path,
     process::{Command, Stdio},
     sync::{Arc, Mutex},
     thread,
@@ -27,11 +28,12 @@ async fn file_to_base64(path: String) -> Result<String, String> {
     Ok(general_purpose::STANDARD.encode(buffer))
 }
 
-fn start_realesrgan_ncnn_vulkan(
+async fn start_realesrgan_ncnn_vulkan(
     path: &str,
     input_path: &str,
     output_path: &str,
     scale: &str,
+    model_path: &str,
     model_name: &str,
 ) -> Command {
     let mut command = Command::new(path);
@@ -47,7 +49,9 @@ fn start_realesrgan_ncnn_vulkan(
         "-o",
         output_path,
         "-s",
-        &scale.to_string(),
+        scale,
+        "-m",
+        model_path,
         "-n",
         model_name,
     ]);
@@ -61,6 +65,7 @@ async fn start_work(
     input_path: String,
     output_path: String,
     scale: String,
+    model_path: String,
     model_name: String,
     id: String,
 ) -> Result<(), String> {
@@ -69,8 +74,10 @@ async fn start_work(
         &input_path,
         &output_path,
         &scale,
+        &model_path,
         &model_name,
-    );
+    )
+    .await;
     let child = Arc::new(Mutex::new(
         command
             .stderr(Stdio::piped())
@@ -144,9 +151,14 @@ async fn start_work(
     Ok(())
 }
 
+#[tauri::command]
+async fn is_dir(path: String) -> bool {
+    Path::new(&path).is_dir()
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![start_work, file_to_base64])
+        .invoke_handler(tauri::generate_handler![start_work, file_to_base64, is_dir])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

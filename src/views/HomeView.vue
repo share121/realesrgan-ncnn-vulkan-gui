@@ -1,16 +1,22 @@
 <script lang="ts" setup>
 import { invoke } from '@tauri-apps/api'
-import { resolve, basename, extname } from '@tauri-apps/api/path'
+import { resolve, basename, extname, resolveResource } from '@tauri-apps/api/path'
 import { open } from '@tauri-apps/api/dialog'
-import { useConfigStore } from '@/stores/config'
 import { appWindow } from '@tauri-apps/api/window'
+import { type as osType } from '@tauri-apps/api/os'
 import type { FileDropEvent } from '@tauri-apps/api/window'
+import { useConfigStore } from '@/stores/config'
 import mime from 'mime'
 
-const { scale, modelName, outputDir, realesrganNcnnVulkanDir } = storeToRefs(useConfigStore())
+const { scale, modelName, outputDir } = storeToRefs(useConfigStore())
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   appWindow.show()
+  console.log((await resolveResource(`resources/models/`)).replace(/^\\\\\?\\/, ''))
+  let os = await osType()
+  console.log(
+    await resolveResource(`resources/realesrgan-${os}${os === 'Windows_NT' ? '.exe' : ''}`)
+  )
 })
 
 async function startWork(id: number) {
@@ -42,12 +48,16 @@ async function startWork(id: number) {
           }
         }
       })
+      let os = await osType()
       invoke('start_work', {
         window: appWindow,
-        realesrganNcnnVulkanPath: realesrganNcnnVulkanDir.value,
+        realesrganNcnnVulkanPath: await resolveResource(
+          `resources/realesrgan-${os}${os === 'Windows_NT' ? '.exe' : ''}`
+        ),
         inputPath: path,
         outputPath: await resolve(outputDir.value, await basename(path)),
         scale: scale.value,
+        modelPath: (await resolveResource(`resources/models/`)).replace(/^\\\\\?\\/, ''),
         modelName: modelName.value,
         id: id_temp
       })
@@ -145,10 +155,12 @@ async function setSavePath() {
   })
   if (selected) outputDir.value = selected as string
 }
-async function setRealesrganNcnnVulkanPath() {
-  const selected = await open()
-  if (selected) realesrganNcnnVulkanDir.value = selected as string
-}
+const outputDirIsOk = asyncComputed(
+  async () =>
+    await invoke('is_dir', {
+      path: outputDir.value
+    })
+)
 const fileInput: Ref<HTMLElement | null> = ref(null)
 const outputDirEl: Ref<HTMLElement | null> = ref(null)
 const { x, y } = useMouse({ type: 'client' })
@@ -161,7 +173,7 @@ function wait(timeout = 0) {
 appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
   await wait(100)
   let selected = payload as unknown as string[]
-  console.log(x, y, element.value)
+  console.log(x.value, y.value, element.value)
   if (element.value === fileInput.value) {
     selected.forEach(async (e, i) => {
       let type = mime.getType(await extname(e)) ?? ''
@@ -222,37 +234,49 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
     <!-- 上传文件 -->
 
     <!-- 配置 -->
-    <div class="mx-auto grid w-full max-w-screen-sm grid-cols-2 gap-4 px-5">
+    <div class="mx-auto grid w-full max-w-screen-sm grid-cols-2 gap-3 px-5">
       <div>
-        <label class="block text-sm text-gray-500 dark:text-gray-300">
-          放大倍数
+        <label class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-300">
+          <div class="flex items-center gap-1">
+            <div>放大模型</div>
+          </div>
+          <select
+            v-model="modelName"
+            class="block w-full appearance-none rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
+          >
+            <option value="realesr-animevideov3">realesr-animevideov3 - 快速</option>
+            <option value="realesrgan-x4plus">realesrgan-x4plus - 处理一般图片</option>
+            <option value="realesrgan-x4plus-anime">realesrgan-x4plus-anime - 处理动漫图片</option>
+          </select>
+        </label>
+      </div>
+      <div>
+        <label class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-300">
+          <div class="flex items-center gap-1">
+            <div>放大倍数</div>
+          </div>
           <select
             v-model="scale"
-            class="mt-2 block w-full appearance-none rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
+            class="block w-full appearance-none rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
           >
-            <option value="2">2x</option>
-            <option value="3">3x</option>
+            <option value="2" v-if="modelName === 'realesr-animevideov3'">2x</option>
+            <option value="3" v-if="modelName === 'realesr-animevideov3'">3x</option>
             <option value="4" selected>4x</option>
           </select>
         </label>
       </div>
-      <div>
-        <label class="block text-sm text-gray-500 dark:text-gray-300">
-          放大模型
-          <select
-            v-model="modelName"
-            class="mt-2 block w-full appearance-none rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
-          >
-            <option value="realesr-animevideov3">realesr-animevideov3</option>
-            <option value="realesrgan-x4plus">realesrgan-x4plus</option>
-            <option value="realesrgan-x4plus-anime">realesrgan-x4plus-anime</option>
-            <option value="realesrnet-x4plus">realesrnet-x4plus</option>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label class="block text-sm text-gray-500 dark:text-gray-300">
-          输出路径
+      <div class="col-span-full">
+        <label class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-300">
+          <div class="flex items-center gap-1">
+            <div>输出路径</div>
+            <div
+              class="flex cursor-pointer items-center hover:text-pink-600 dark:hover:text-pink-500"
+              title="请选择文件夹"
+              v-if="!outputDirIsOk"
+            >
+              <solar-info-circle-linear></solar-info-circle-linear>
+            </div>
+          </div>
           <input
             v-model="outputDir"
             ref="outputDirEl"
@@ -260,20 +284,7 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
             type="text"
             placeholder="输出文件夹的路径"
             title="输出文件夹的路径，双击选择路径"
-            class="mt-2 block w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
-          />
-        </label>
-      </div>
-      <div>
-        <label class="block text-sm text-gray-500 dark:text-gray-300">
-          realesrgan 路径
-          <input
-            v-model="realesrganNcnnVulkanDir"
-            @dblclick="setRealesrganNcnnVulkanPath"
-            type="text"
-            placeholder="realesrgan-ncnn-vulkan 的路径"
-            title="realesrgan-ncnn-vulkan 的路径，双击选择路径"
-            class="mt-2 block w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
+            class="block w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
           />
         </label>
       </div>

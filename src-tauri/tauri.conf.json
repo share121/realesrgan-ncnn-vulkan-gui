@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "realesrgan-ncnn-vulkan-gui",
+    "productName": "realesrgan",
     "version": "0.0.0"
   },
   "tauri": {
@@ -19,6 +19,9 @@
         "open": true
       },
       "path": {
+        "all": true
+      },
+      "os": {
         "all": true
       }
     },
@@ -41,7 +44,8 @@
         "wix": {
           "language": "zh-CN"
         }
-      }
+      },
+      "resources": ["resources/*"]
     },
     "security": {
       "csp": null
