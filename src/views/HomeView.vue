@@ -11,7 +11,7 @@ import mime from 'mime'
 
 const { scale, modelName, outputDir } = storeToRefs(useConfigStore())
 
-window.addEventListener('load', async () => {
+window.addEventListener('load', () => {
   appWindow.show()
 })
 
