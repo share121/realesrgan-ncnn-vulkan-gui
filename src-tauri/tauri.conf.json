@@ -13,7 +13,8 @@
   "tauri": {
     "allowlist": {
       "window": {
-        "show": true
+        "show": true,
+        "close": true
       },
       "dialog": {
         "open": true

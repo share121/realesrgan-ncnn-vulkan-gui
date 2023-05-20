@@ -4,8 +4,9 @@ import { resolve, basename, extname, resolveResource } from '@tauri-apps/api/pat
 import { open } from '@tauri-apps/api/dialog'
 import { appWindow } from '@tauri-apps/api/window'
 import { type as osType } from '@tauri-apps/api/os'
-import type { FileDropEvent } from '@tauri-apps/api/window'
+import type { FileDropEvent, CloseRequestedEvent } from '@tauri-apps/api/window'
 import { useConfigStore } from '@/stores/config'
+import gsap from 'gsap'
 import mime from 'mime'
 
 const { scale, modelName, outputDir } = storeToRefs(useConfigStore())
@@ -24,6 +25,7 @@ async function startWork(id: number) {
   if (file) {
     file.isWorking = !file.isWorking
     file.progress = 0
+    gsap.to(file.tweened, { duration: 0.15, number: 0 })
     if (file.id_temp) {
       appWindow.emit(file.id_temp + 'stop')
     }
@@ -44,6 +46,7 @@ async function startWork(id: number) {
             let n = data.match(/^([0-9]+(\.[0-9]+)?)\s*%$/)?.[1]
             if (n) {
               file.progress = +n / 100
+              gsap.to(file.tweened, { duration: 0.15, number: +n })
             }
           }
         }
@@ -64,6 +67,7 @@ async function startWork(id: number) {
         .then(() => {
           if (file?.id_temp === id_temp) {
             file.progress = 1
+            gsap.to(file.tweened, { duration: 0.15, number: 100 })
           }
         })
         .catch((e) => {
@@ -93,6 +97,9 @@ const files: {
   isWorking: boolean
   errMsg: string
   id_temp?: string
+  tweened: {
+    number: number
+  }
   unlisten?: Function
 }[] = reactive([])
 async function uploadFiles() {
@@ -133,7 +140,10 @@ async function uploadFiles() {
           id: files.length && Math.max(...files.map((e) => e.id)) + 1,
           isWorking: false,
           progress: 0,
-          errMsg: ''
+          errMsg: '',
+          tweened: {
+            number: 0
+          }
         })
       }, i * 100)
     })
@@ -195,7 +205,10 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
             id: files.length && Math.max(...files.map((e) => e.id)) + 1,
             isWorking: false,
             progress: 0,
-            errMsg: ''
+            errMsg: '',
+            tweened: {
+              number: 0
+            }
           })
         }, i * 100)
       }
@@ -205,6 +218,10 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
     outputDir.value = selected[0]
   }
   console.log(payload, files)
+})
+appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
+  files.forEach((e) => e.isWorking && startWork(e.id))
+  appWindow.close()
 })
 </script>
 
@@ -337,7 +354,7 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
           <div class="relative flex flex-1" :title="`进度：${file.progress * 100}%`">
             <div class="absolute -top-1 left-0 flex w-full -translate-y-full justify-between">
               <div>进度</div>
-              <div>{{ (file.progress * 100).toFixed(2) }} %</div>
+              <div>{{ file.tweened.number.toFixed(2) }} %</div>
             </div>
             <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
               <div

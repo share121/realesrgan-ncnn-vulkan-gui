@@ -46,11 +46,5 @@ onMounted(() => {
 </script>
 
 <template>
-  <span class="inline-block" v-for="i in text" ref="spans">{{ i }}</span>
+  <span class="inline-block opacity-0 transition-none" v-for="i in text" ref="spans">{{ i }}</span>
 </template>
-
-<style scoped>
-span {
-  opacity: 0;
-}
-</style>
