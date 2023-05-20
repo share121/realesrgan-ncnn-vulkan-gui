@@ -64,7 +64,6 @@ async function startWork(id: number) {
         .then(() => {
           if (file?.id_temp === id_temp) {
             file.progress = 1
-            file.isWorking = false
           }
         })
         .catch((e) => {
@@ -78,6 +77,7 @@ async function startWork(id: number) {
             file.unlisten?.()
             file.unlisten = undefined
             file.id_temp = undefined
+            file.isWorking = false
           }
         })
     }
@@ -283,7 +283,7 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
             @dblclick="setSavePath"
             type="text"
             placeholder="输出文件夹的路径"
-            title="输出文件夹的路径，双击选择路径"
+            title="输出文件夹的路径，双击选择路径，支持拖拽上传"
             class="block w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-gray-700 placeholder-gray-400/70 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
           />
         </label>
