@@ -225,26 +225,33 @@ async function toggleMaximize() {
   <teleport to="body">
     <div
       data-tauri-drag-region
-      class="fixed left-0 right-0 top-0 flex h-8 justify-end bg-white dark:bg-gray-900"
+      class="fixed left-0 right-0 top-0 flex h-10 justify-between bg-white dark:bg-gray-900"
     >
       <div
-        @click="appWindow.minimize()"
-        class="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
+        class="pointer-events-none ml-3 flex items-center overflow-hidden text-ellipsis whitespace-nowrap text-gray-700 dark:text-gray-300"
       >
-        <solar-arrow-down-linear></solar-arrow-down-linear>
+        图像超分
       </div>
-      <div
-        @click="toggleMaximize"
-        class="inline-flex h-8 w-8 items-center justify-center text-sm transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
-      >
-        <solar-minimize-linear v-if="isMaximized"></solar-minimize-linear>
-        <solar-maximize-linear v-else></solar-maximize-linear>
-      </div>
-      <div
-        @click="close"
-        class="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-pink-500 hover:text-white dark:hover:bg-pink-600"
-      >
-        <solar-close-circle-linear></solar-close-circle-linear>
+      <div class="flex w-36">
+        <div
+          @click="appWindow.minimize()"
+          class="flex w-full items-center justify-center transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
+        >
+          <solar-arrow-down-linear />
+        </div>
+        <div
+          @click="toggleMaximize"
+          class="flex w-full items-center justify-center text-sm transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
+        >
+          <solar-minimize-linear v-if="isMaximized" />
+          <solar-maximize-linear v-else />
+        </div>
+        <div
+          @click="close"
+          class="flex w-full items-center justify-center transition-colors hover:bg-pink-500 hover:text-white dark:hover:bg-pink-600"
+        >
+          <solar-close-circle-linear />
+        </div>
       </div>
     </div>
   </teleport>

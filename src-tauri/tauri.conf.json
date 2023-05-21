@@ -69,7 +69,9 @@
         "width": 470,
         "height": 760,
         "visible": false,
-        "center": true
+        "center": true,
+        "minWidth": 225,
+        "minHeight": 40
       }
     ]
   }
