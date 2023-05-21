@@ -12,11 +12,6 @@ use std::{
 };
 use tauri::Window;
 
-#[derive(Clone, serde::Serialize)]
-struct Payload {
-    data: String,
-}
-
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 async fn file_to_base64(path: String) -> Result<String, String> {
@@ -93,10 +88,12 @@ async fn start_work(
         let output = Arc::clone(&output);
         let id = id.clone();
         handle = thread::spawn(move || -> Result<(), String> {
-            let stdout = match child.lock().map_err(|e| e.to_string())?.stderr.take() {
-                Some(x) => Ok(x),
-                None => Err("stderr 是空的".to_string()),
-            }?;
+            let stdout = child
+                .lock()
+                .map_err(|e| e.to_string())?
+                .stderr
+                .take()
+                .ok_or("stderr 是空的".to_string())?;
             let reader = BufReader::new(stdout);
             reader
                 .lines()
@@ -109,7 +106,7 @@ async fn start_work(
                     window
                         .lock()
                         .map_err(|e| e.to_string())?
-                        .emit(&id, Payload { data: line })
+                        .emit(&id, line)
                         .map_err(|e| e.to_string())
                 })
                 .map_err(|e| e.to_string())?;
@@ -118,11 +115,12 @@ async fn start_work(
     }
     {
         let child = Arc::clone(&child);
+        let id = id.clone();
         window
             .lock()
             .map_err(|e| e.to_string())?
             .once(format!("{}stop", id), move |_| {
-                child.lock().unwrap().kill().unwrap();
+                let _ = child.lock().map(|mut c| c.kill());
             });
     }
     let _ = handle.join();
@@ -146,7 +144,7 @@ async fn start_work(
     window
         .lock()
         .map_err(|e| e.to_string())?
-        .emit(&id, Payload { data: "".into() })
+        .emit(&id, "")
         .map_err(|e| e.to_string())?;
     Ok(())
 }

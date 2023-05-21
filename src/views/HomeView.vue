@@ -4,7 +4,7 @@ import { resolve, basename, extname, resolveResource } from '@tauri-apps/api/pat
 import { open } from '@tauri-apps/api/dialog'
 import { appWindow } from '@tauri-apps/api/window'
 import { type as osType } from '@tauri-apps/api/os'
-import type { FileDropEvent, CloseRequestedEvent } from '@tauri-apps/api/window'
+import type { FileDropEvent } from '@tauri-apps/api/window'
 import { useConfigStore } from '@/stores/config'
 import gsap from 'gsap'
 import mime from 'mime'
@@ -33,9 +33,7 @@ async function startWork(id: number) {
       file.errMsg = ''
       let path = file.path
       let id_temp = (file.id_temp = `${id}-${window.crypto.randomUUID()}-${+new Date()}`)
-      file.unlisten = await appWindow.listen<{
-        data: string
-      }>(id_temp, ({ payload: { data } }) => {
+      file.unlisten = await appWindow.listen<string>(id_temp, ({ payload: data }) => {
         if (file?.id_temp === id_temp) {
           if (data) {
             let n = data.match(/^([0-9]+(\.[0-9]+)?)\s*%$/)?.[1]
@@ -211,10 +209,10 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
     outputDir.value = selected[0]
   }
 })
-appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
-  files.forEach(async (e) => e.isWorking && (await startWork(e.id)))
+function close() {
+  files.forEach((e) => e.isWorking && startWork(e.id))
   appWindow.close()
-})
+}
 </script>
 
 <template>
@@ -236,7 +234,7 @@ appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
         <solar-maximize-linear></solar-maximize-linear>
       </div>
       <div
-        @click="appWindow.close()"
+        @click="close"
         class="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-pink-500 hover:text-white dark:hover:bg-pink-600"
       >
         <solar-close-circle-linear></solar-close-circle-linear>
