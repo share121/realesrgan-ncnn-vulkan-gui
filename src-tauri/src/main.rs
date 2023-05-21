@@ -10,7 +10,8 @@ use std::{
     sync::{Arc, Mutex},
     thread,
 };
-use tauri::Window;
+use tauri::{Manager, Window};
+use window_shadows::set_shadow;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -156,6 +157,11 @@ async fn is_dir(path: String) -> bool {
 
 fn main() {
     tauri::Builder::default()
+        .setup(|app| {
+            #[cfg(any(windows, target_os = "macos"))]
+            set_shadow(&app.get_window("main").unwrap(), true).expect("Unsupported platform!");
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![start_work, file_to_base64, is_dir])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
