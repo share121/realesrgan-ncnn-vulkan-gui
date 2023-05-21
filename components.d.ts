@@ -14,6 +14,7 @@ declare module '@vue/runtime-core' {
     MerText: typeof import('./src/components/MerText.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SolarArrowDownLinear: typeof import('~icons/solar/arrow-down-linear')['default']
     SolarCloseCircleLinear: typeof import('~icons/solar/close-circle-linear')['default']
     SolarCloudUploadLinear: typeof import('~icons/solar/cloud-upload-linear')['default']
     SolarInfoCircleLinear: typeof import('~icons/solar/info-circle-linear')['default']

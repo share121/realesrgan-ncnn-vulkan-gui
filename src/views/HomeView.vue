@@ -213,7 +213,12 @@ function close() {
   files.forEach((e) => e.isWorking && startWork(e.id))
   appWindow.close()
 }
+const isMaximized = ref(false)
 appWindow.listen('tauri://close-requested', close)
+async function toggleMaximize() {
+  isMaximized.value = !(await appWindow.isMaximized())
+  appWindow.toggleMaximize()
+}
 </script>
 
 <template>
@@ -226,13 +231,14 @@ appWindow.listen('tauri://close-requested', close)
         @click="appWindow.minimize()"
         class="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
       >
-        <solar-minimize-linear></solar-minimize-linear>
+        <solar-arrow-down-linear></solar-arrow-down-linear>
       </div>
       <div
-        @click="appWindow.toggleMaximize()"
-        class="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
+        @click="toggleMaximize"
+        class="inline-flex h-8 w-8 items-center justify-center text-sm transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
       >
-        <solar-maximize-linear></solar-maximize-linear>
+        <solar-minimize-linear v-if="isMaximized"></solar-minimize-linear>
+        <solar-maximize-linear v-else></solar-maximize-linear>
       </div>
       <div
         @click="close"
