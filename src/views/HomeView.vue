@@ -213,6 +213,7 @@ function close() {
   files.forEach((e) => e.isWorking && startWork(e.id))
   appWindow.close()
 }
+appWindow.listen('tauri://close-requested', close)
 </script>
 
 <template>
