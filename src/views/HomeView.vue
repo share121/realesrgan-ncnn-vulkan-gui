@@ -212,7 +212,7 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
   }
 })
 appWindow.listen<CloseRequestedEvent>('tauri://close-requested', () => {
-  files.forEach((e) => e.isWorking && startWork(e.id))
+  files.forEach(async (e) => e.isWorking && (await startWork(e.id)))
   appWindow.close()
 })
 </script>
