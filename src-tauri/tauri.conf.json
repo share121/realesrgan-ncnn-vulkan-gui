@@ -52,6 +52,7 @@
           "language": "zh-CN"
         }
       },
+      "externalBin": ["binaries/realesrgan"],
       "resources": ["resources/*"]
     },
     "security": {

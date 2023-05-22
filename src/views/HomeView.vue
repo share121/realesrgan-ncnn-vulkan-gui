@@ -1,9 +1,8 @@
 <script lang="ts" setup>
 import { invoke } from '@tauri-apps/api'
-import { resolve, basename, extname, resolveResource } from '@tauri-apps/api/path'
+import { resolve, basename, extname } from '@tauri-apps/api/path'
 import { open } from '@tauri-apps/api/dialog'
 import { appWindow } from '@tauri-apps/api/window'
-import { type as osType } from '@tauri-apps/api/os'
 import type { FileDropEvent } from '@tauri-apps/api/window'
 import { useConfigStore } from '@/stores/config'
 import gsap from 'gsap'
@@ -44,16 +43,11 @@ async function startWork(id: number) {
           }
         }
       })
-      let os = await osType()
       invoke('start_work', {
         window: appWindow,
-        realesrganNcnnVulkanPath: await resolveResource(
-          `resources/realesrgan-${os}${os === 'Windows_NT' ? '.exe' : ''}`
-        ),
         inputPath: path,
         outputPath: await resolve(outputDir.value, await basename(path)),
         scale: scale.value,
-        modelPath: (await resolveResource(`resources/models/`)).replace(/^\\\\\?\\/, ''),
         modelName: modelName.value,
         id: id_temp
       })
