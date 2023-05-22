@@ -40,7 +40,7 @@ async fn start_work(
         .replace(&model_path, "$1");
     println!("{}", model_path);
     let window = Arc::new(Mutex::new(window));
-    let (mut rx, child) = Command::new_sidecar("realesrgan")
+    let (mut rx, child) = Command::new_sidecar("realesrgan-n")
         .map_err(|_| "failed to create `realesrgan` binary command")?
         .args([
             "-i",
@@ -53,6 +53,7 @@ async fn start_work(
             &model_path,
             "-n",
             &model_name,
+            "-v",
         ])
         .spawn()
         .map_err(|_| "failed to create `realesrgan` binary command")?;
@@ -72,7 +73,7 @@ async fn start_work(
                     window
                         .lock()
                         .expect("connot lock `window`")
-                        .emit(&id, &line)
+                        .emit(&id, line)
                         .expect("failed to emit event");
                 }
             }

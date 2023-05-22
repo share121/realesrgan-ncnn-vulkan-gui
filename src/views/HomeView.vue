@@ -35,9 +35,9 @@ async function startWork(id: number) {
       file.unlisten = await appWindow.listen<string>(id_temp, ({ payload: data }) => {
         if (file?.id_temp === id_temp) {
           if (data) {
-            let n = data.match(/^([0-9]+(\.[0-9]+)?)\s*%$/)?.[1]
+            let n = parseFloat(data)
             if (n) {
-              file.progress = +n / 100
+              file.progress = n / 100
               gsap.to(file.tweened, { duration: 0.15, number: +n })
             }
           }
