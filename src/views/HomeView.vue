@@ -29,12 +29,13 @@ async function startWork(id: number) {
     }
     file.unlisten = undefined
     if (file.isWorking) {
-      file.errMsg = ''
+      file.output = ''
       let path = file.path
       let id_temp = (file.id_temp = `${id}-${window.crypto.randomUUID()}-${+new Date()}`)
       file.unlisten = await appWindow.listen<string>(id_temp, ({ payload: data }) => {
         if (file?.id_temp === id_temp) {
           if (data) {
+            file.output += data
             let n = parseFloat(data)
             if (n) {
               file.progress = n / 100
@@ -59,9 +60,9 @@ async function startWork(id: number) {
         })
         .catch((e) => {
           if (file?.id_temp === id_temp) {
-            file.errMsg = e
-            console.error(e)
+            file.output += e
           }
+          console.error(e)
         })
         .finally(() => {
           if (file?.id_temp === id_temp) {
@@ -82,12 +83,13 @@ const files: {
   stype: string
   progress: number
   isWorking: boolean
-  errMsg: string
+  output: string
   id_temp?: string
   tweened: {
     number: number
   }
   unlisten?: Function
+  showOutput: boolean
 }[] = reactive([])
 async function uploadFiles() {
   let selected = await open({
@@ -107,15 +109,20 @@ async function uploadFiles() {
       }
     ]
   })
-  if (selected !== null) {
+  if (selected) {
     if (!Array.isArray(selected)) selected = [selected]
-    selected.forEach(async (e, i) => {
-      let type = mime.getType(await extname(e)) ?? ''
+    processFile(selected)
+  }
+}
+function processFile(fileList: string[]) {
+  fileList.forEach(async (e, i) => {
+    let type = mime.getType(await extname(e)) ?? ''
+    let stype = type.split('/')[0]
+    if (['image', 'video'].includes(stype)) {
       let base64 = ref('')
       invoke('file_to_base64', {
         path: e
       }).then((e) => {
-        // @ts-ignore
         base64.value = `data:${type};base64,${e}`
       })
       setTimeout(() => {
@@ -127,14 +134,15 @@ async function uploadFiles() {
           id: files.length && Math.max(...files.map((e) => e.id)) + 1,
           isWorking: false,
           progress: 0,
-          errMsg: '',
+          output: '',
           tweened: {
             number: 0
-          }
+          },
+          showOutput: false
         })
       }, i * 100)
-    })
-  }
+    }
+  })
 }
 function deleteFile(id: number) {
   const start = files.findIndex((e) => e.id === id)
@@ -170,34 +178,7 @@ appWindow.listen<FileDropEvent>('tauri://file-drop', async ({ payload }) => {
   await wait(100)
   let selected = payload as unknown as string[]
   if (element.value === fileInput.value) {
-    selected.forEach(async (e, i) => {
-      let type = mime.getType(await extname(e)) ?? ''
-      let stype = type.split('/')[0]
-      if (['image', 'video'].includes(stype)) {
-        let base64 = ref('')
-        invoke('file_to_base64', {
-          path: e
-        }).then((e) => {
-          // @ts-ignore
-          base64.value = `data:${type};base64,${e}`
-        })
-        setTimeout(() => {
-          files.push({
-            path: e,
-            base64,
-            type,
-            stype: type.split('/')[0],
-            id: files.length && Math.max(...files.map((e) => e.id)) + 1,
-            isWorking: false,
-            progress: 0,
-            errMsg: '',
-            tweened: {
-              number: 0
-            }
-          })
-        }, i * 100)
-      }
-    })
+    processFile(selected)
   }
   if (element.value === outputDirEl.value) {
     outputDir.value = selected[0]
@@ -207,15 +188,20 @@ function close() {
   files.forEach((e) => e.isWorking && startWork(e.id))
   appWindow.close()
 }
-const isMaximized = ref(false)
 appWindow.listen('tauri://close-requested', close)
-async function toggleMaximize() {
-  isMaximized.value = !(await appWindow.isMaximized())
-  appWindow.toggleMaximize()
-}
+const isMaximized = ref(false)
+watch(isMaximized, (val) => {
+  if (val) {
+    appWindow.maximize()
+  } else {
+    appWindow.unmaximize()
+  }
+})
+const toggleMaximize = useToggle(isMaximized)
 </script>
 
 <template>
+  <!-- eslint-disable vue/no-textarea-mustache -->
   <teleport to="body">
     <div
       data-tauri-drag-region
@@ -234,7 +220,7 @@ async function toggleMaximize() {
           <solar-arrow-down-linear />
         </div>
         <div
-          @click="toggleMaximize"
+          @click="toggleMaximize()"
           class="flex w-full items-center justify-center text-sm transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
         >
           <solar-minimize-linear v-if="isMaximized" />
@@ -348,77 +334,83 @@ async function toggleMaximize() {
         <div
           v-for="file in files"
           :key="file.id"
-          class="flex items-center justify-between gap-4 rounded-xl p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+          class="rounded-xl p-5 transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          <!-- 预览图 -->
-          <div
-            class="h-24 w-24 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-700"
-            :title="file.path"
-          >
-            <img
-              v-if="file.stype === 'image'"
-              :src="file.base64 as unknown as string"
-              :alt="file.path"
-              class="h-full w-full object-cover opacity-0 transition-opacity"
-              @load=";($event.target as HTMLElement).style.opacity = '1'"
-            />
-            <video
-              v-else-if="file.stype === 'video'"
-              :src="file.base64 as unknown as string"
-              class="h-full w-full object-cover opacity-0 transition-opacity"
-              preload="metadata"
-              @loadedmetadata=";($event.target as HTMLElement).style.opacity = '1'"
+          <div class="flex items-center justify-between gap-4">
+            <!-- 预览图 -->
+            <div
+              class="h-24 w-24 overflow-hidden rounded-md bg-gray-200 dark:bg-gray-700"
+              :title="file.path"
             >
-              {{ file.path }}
-            </video>
-          </div>
-          <!-- 预览图 -->
-          <!-- 进度条 -->
-          <div class="relative flex flex-1" :title="`进度：${file.progress * 100}%`">
-            <div class="absolute -top-1 left-0 flex w-full -translate-y-full justify-between">
-              <div>进度</div>
-              <div>{{ file.tweened.number.toFixed(2) }} %</div>
+              <img
+                v-if="file.stype === 'image'"
+                :src="file.base64 as unknown as string"
+                :alt="file.path"
+                class="h-full w-full object-cover opacity-0 transition-opacity"
+                @load=";($event.target as HTMLElement).style.opacity = '1'"
+              />
+              <video
+                v-else-if="file.stype === 'video'"
+                :src="file.base64 as unknown as string"
+                class="h-full w-full object-cover opacity-0 transition-opacity"
+                preload="metadata"
+                @loadedmetadata=";($event.target as HTMLElement).style.opacity = '1'"
+              >
+                {{ file.path }}
+              </video>
             </div>
-            <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+            <!-- 预览图 -->
+            <!-- 进度条 -->
+            <div class="relative flex flex-1" :title="`进度：${file.progress * 100}%`">
+              <div class="absolute -top-1 left-0 flex w-full -translate-y-full justify-between">
+                <div>进度</div>
+                <div>{{ file.tweened.number.toFixed(2) }} %</div>
+              </div>
+              <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                <div
+                  class="h-full rounded-full bg-blue-500 dark:bg-blue-600"
+                  :style="{ width: file.tweened.number + '%' }"
+                ></div>
+              </div>
+            </div>
+            <!-- 进度条 -->
+            <!-- 操作 -->
+            <div class="flex gap-2">
               <div
-                class="h-full rounded-full"
-                :class="{
-                  'bg-blue-500': !file.errMsg,
-                  'dark:bg-blue-600': !file.errMsg,
-                  'bg-pink-500': file.errMsg,
-                  'dark:bg-pink-600': file.errMsg
-                }"
-                :style="{ width: file.tweened.number + '%' }"
-              ></div>
+                class="flex cursor-pointer items-center p-1 text-xl transition-colors hover:text-blue-600 dark:hover:text-blue-500"
+                :title="file.showOutput ? '隐藏输出' : '显示输出'"
+                @click="file.showOutput = !file.showOutput"
+              >
+                <solar-programming-linear></solar-programming-linear>
+              </div>
+              <div
+                class="flex cursor-pointer items-center p-1 text-xl transition-colors hover:text-pink-600 dark:hover:text-pink-500"
+                title="删除"
+                @click="deleteFile(file.id)"
+              >
+                <solar-trash-bin-2-linear></solar-trash-bin-2-linear>
+              </div>
+              <div
+                class="flex cursor-pointer items-center p-1 transition-colors hover:text-blue-600 dark:hover:text-blue-500"
+                :title="file.isWorking ? '暂停' : '开始'"
+                @click="startWork(file.id)"
+              >
+                <solar-pause-linear v-if="file.isWorking"></solar-pause-linear>
+                <solar-play-linear v-else></solar-play-linear>
+              </div>
             </div>
+            <!-- 操作 -->
           </div>
-          <!-- 进度条 -->
-          <!-- 操作 -->
-          <div class="flex gap-2">
-            <div
-              class="flex cursor-pointer items-center p-1 text-xl transition-colors hover:text-pink-600 dark:hover:text-pink-500"
-              :title="file.errMsg"
-              v-if="file.errMsg"
+          <!-- 输出 -->
+          <transition name="spread">
+            <textarea
+              v-if="file.showOutput"
+              readonly
+              class="mt-4 block h-32 w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-gray-700 placeholder-gray-400/70 outline-none transition-[border,box-shadow] focus:border-blue-400 focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
+              >{{ file.output || '没有输出' }}</textarea
             >
-              <solar-info-circle-linear></solar-info-circle-linear>
-            </div>
-            <div
-              class="flex cursor-pointer items-center p-1 text-xl transition-colors hover:text-pink-600 dark:hover:text-pink-500"
-              title="删除"
-              @click="deleteFile(file.id)"
-            >
-              <solar-trash-bin-2-linear></solar-trash-bin-2-linear>
-            </div>
-            <div
-              class="flex cursor-pointer items-center p-1 transition-colors hover:text-blue-600 dark:hover:text-blue-500"
-              :title="file.isWorking ? '暂停' : '开始'"
-              @click="startWork(file.id)"
-            >
-              <solar-pause-linear v-if="file.isWorking"></solar-pause-linear>
-              <solar-play-linear v-else></solar-play-linear>
-            </div>
-          </div>
-          <!-- 操作 -->
+          </transition>
+          <!-- 输出 -->
         </div>
       </TransitionGroup>
     </div>
@@ -442,5 +434,20 @@ async function toggleMaximize() {
   以便能够正确地计算移动的动画。 */
 .list-leave-active {
   position: absolute;
+}
+
+.spread-enter-active,
+.spread-leave-active {
+  transition: all 0.5s ease;
+  overflow: hidden;
+}
+.spread-enter-from,
+.spread-leave-to {
+  margin-block: 0;
+  padding-block: 0;
+  border-block-width: 0;
+  outline-width: 0;
+  height: 0;
+  opacity: 0;
 }
 </style>

@@ -6,11 +6,10 @@
 async fn file_to_base64(path: String) -> Result<String, String> {
     use base64::{engine::general_purpose, Engine as _};
     use tokio::{fs::File, io::AsyncReadExt};
-    let mut buffer: Vec<u8> = Vec::new();
-    File::open(path)
-        .await
-        .map_err(|e| e.to_string())?
-        .read_to_end(&mut buffer)
+    let mut file = File::open(path).await.map_err(|e| e.to_string())?;
+    let mut buffer: Vec<u8> =
+        Vec::with_capacity(file.metadata().await.map_err(|e| e.to_string())?.len() as usize);
+    file.read_to_end(&mut buffer)
         .await
         .map_err(|e| e.to_string())?;
     Ok(general_purpose::STANDARD.encode(buffer))
@@ -36,11 +35,11 @@ async fn start_work(
         .to_string_lossy()
         .to_string();
     let model_path = Regex::new(r"^\\\\\?\\(.*)$")
-        .expect("failed to create `Regex`")
+        .map_err(|e| e.to_string())?
         .replace(&model_path, "$1");
     println!("{}", model_path);
     let window = Arc::new(Mutex::new(window));
-    let (mut rx, child) = Command::new_sidecar("realesrgan-n")
+    let command = Command::new_sidecar("realesrgan-n")
         .map_err(|_| "failed to create `realesrgan` binary command")?
         .args([
             "-i",
@@ -54,7 +53,13 @@ async fn start_work(
             "-n",
             &model_name,
             "-v",
-        ])
+        ]);
+    #[cfg(windows)]
+    let command = {
+        use tauri::api::process::Encoding;
+        command.encoding(Encoding::for_label(b"gbk").ok_or("no gbk")?)
+    };
+    let (mut rx, child) = command
         .spawn()
         .map_err(|_| "failed to create `realesrgan` binary command")?;
     let stop_id = window
@@ -68,19 +73,32 @@ async fn start_work(
         tauri::async_runtime::spawn(async move {
             // read events such as stdout
             while let Some(event) = rx.recv().await {
-                if let CommandEvent::Stderr(line) = event {
-                    println!("{line}");
-                    window
-                        .lock()
-                        .expect("connot lock `window`")
-                        .emit(&id, line)
-                        .expect("failed to emit event");
+                match event {
+                    CommandEvent::Stderr(line) => {
+                        println!("{line}");
+                        window
+                            .lock()
+                            .expect("connot lock `window`")
+                            .emit(&id, line)
+                            .expect("failed to emit event");
+                    }
+                    CommandEvent::Error(err) => {
+                        println!("{err}");
+                        panic!("{err}");
+                    }
+                    CommandEvent::Terminated(e) => {
+                        println!("{:?}", e);
+                    }
+                    _ => (),
                 }
             }
         })
     }
     .await
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| {
+        println!("{}", e);
+        e.to_string()
+    })?;
     window.lock().map_err(|e| e.to_string())?.unlisten(stop_id);
     Ok(())
 }
