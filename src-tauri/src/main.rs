@@ -37,7 +37,6 @@ async fn start_work(
     let model_path = Regex::new(r"^\\\\\?\\(.*)$")
         .map_err(|e| e.to_string())?
         .replace(&model_path, "$1");
-    println!("{}", model_path);
     let window = Arc::new(Mutex::new(window));
     let command = Command::new_sidecar("realesrgan-n")
         .map_err(|_| "failed to create `realesrgan` binary command")?
@@ -74,8 +73,7 @@ async fn start_work(
             // read events such as stdout
             while let Some(event) = rx.recv().await {
                 match event {
-                    CommandEvent::Stderr(line) => {
-                        println!("{line}");
+                    CommandEvent::Stderr(line) | CommandEvent::Stdout(line) => {
                         window
                             .lock()
                             .expect("connot lock `window`")
@@ -83,11 +81,7 @@ async fn start_work(
                             .expect("failed to emit event");
                     }
                     CommandEvent::Error(err) => {
-                        println!("{err}");
                         panic!("{err}");
-                    }
-                    CommandEvent::Terminated(e) => {
-                        println!("{:?}", e);
                     }
                     _ => (),
                 }
@@ -95,10 +89,7 @@ async fn start_work(
         })
     }
     .await
-    .map_err(|e| {
-        println!("{}", e);
-        e.to_string()
-    })?;
+    .map_err(|e| e.to_string())?;
     window.lock().map_err(|e| e.to_string())?.unlisten(stop_id);
     Ok(())
 }

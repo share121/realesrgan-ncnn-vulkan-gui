@@ -62,7 +62,6 @@ async function startWork(id: number) {
           if (file?.id_temp === id_temp) {
             file.output += e
           }
-          console.error(e)
         })
         .finally(() => {
           if (file?.id_temp === id_temp) {
@@ -406,7 +405,7 @@ const toggleMaximize = useToggle(isMaximized)
             <textarea
               v-if="file.showOutput"
               readonly
-              class="mt-4 block h-32 w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-gray-700 placeholder-gray-400/70 outline-none transition-[border,box-shadow] focus:border-blue-400 focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
+              class="mt-4 block h-32 w-full resize-y rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-gray-700 placeholder-gray-400/70 outline-none transition-[border,box-shadow] focus:border-blue-400 focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
               >{{ file.output || '没有输出' }}</textarea
             >
           </transition>
