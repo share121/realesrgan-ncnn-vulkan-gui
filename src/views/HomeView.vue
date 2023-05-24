@@ -215,7 +215,6 @@ const toggleMaximize = useToggle(isMaximized)
 </script>
 
 <template>
-  <!-- eslint-disable vue/no-textarea-mustache -->
   <teleport to="body">
     <div
       data-tauri-drag-region
@@ -376,7 +375,9 @@ const toggleMaximize = useToggle(isMaximized)
             <!-- 预览图 -->
             <!-- 进度条 -->
             <div class="relative flex flex-1" :title="`进度：${file.progress * 100}%`">
-              <div class="absolute -top-1 left-0 flex w-full -translate-y-full justify-between">
+              <div
+                class="absolute -top-1 left-0 flex w-full -translate-y-full justify-between whitespace-nowrap"
+              >
                 <div>进度</div>
                 <div>{{ file.tweened.number.toFixed(2) }} %</div>
               </div>
@@ -421,8 +422,9 @@ const toggleMaximize = useToggle(isMaximized)
               v-if="file.showOutput"
               readonly
               class="mt-4 block h-32 w-full resize-y rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-gray-700 placeholder-gray-400/70 outline-none transition-[border,box-shadow] focus:border-blue-400 focus:ring focus:ring-blue-300 focus:ring-opacity-40 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:border-blue-300"
-              >{{ file.output || '没有输出' }}</textarea
-            >
+              placeholder="没有输出"
+              v-text="file.output"
+            ></textarea>
           </transition>
           <!-- 输出 -->
         </div>

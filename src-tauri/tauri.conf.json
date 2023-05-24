@@ -67,11 +67,11 @@
         "resizable": true,
         "title": "图像超分",
         "decorations": false,
-        "width": 470,
-        "height": 760,
+        "width": 430,
+        "height": 700,
         "visible": false,
         "center": true,
-        "minWidth": 225,
+        "minWidth": 430,
         "minHeight": 40
       }
     ]
