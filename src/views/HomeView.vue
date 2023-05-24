@@ -32,14 +32,22 @@ async function startWork(id: number) {
       file.output = ''
       let path = file.path
       let id_temp = (file.id_temp = `${id}-${window.crypto.randomUUID()}-${+new Date()}`)
-      file.unlisten = await appWindow.listen<string>(id_temp, ({ payload: data }) => {
+      file.unlisten = await appWindow.listen<string | object>(id_temp, ({ payload: data }) => {
         if (file?.id_temp === id_temp) {
           if (data) {
-            file.output += data
-            let n = parseFloat(data)
-            if (n) {
-              file.progress = n / 100
-              gsap.to(file.tweened, { duration: 0.15, number: +n })
+            if (typeof data === 'string') {
+              data = data.trim()
+              file.output += data + '\n'
+              let n = parseFloat(data)
+              if (n) {
+                file.progress = n / 100
+                gsap.to(file.tweened, { duration: 0.15, number: +n })
+              }
+            } else {
+              try {
+                file.output += JSON.stringify(data) + '\n'
+                // eslint-disable-next-line no-empty
+              } catch {}
             }
           }
         }
@@ -60,7 +68,14 @@ async function startWork(id: number) {
         })
         .catch((e) => {
           if (file?.id_temp === id_temp) {
-            file.output += e
+            if (e instanceof String) {
+              file.output += e.trim() + '\n'
+            } else {
+              try {
+                file.output += JSON.stringify(e) + '\n'
+                // eslint-disable-next-line no-empty
+              } catch {}
+            }
           }
         })
         .finally(() => {

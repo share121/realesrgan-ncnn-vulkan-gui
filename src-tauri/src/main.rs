@@ -61,27 +61,31 @@ async fn start_work(
     let (mut rx, child) = command
         .spawn()
         .map_err(|_| "failed to create `realesrgan` binary command")?;
-    let stop_id = window
-        .lock()
-        .map_err(|e| e.to_string())?
-        .once(format!("{}stop", id), |_| {
-            child.kill().expect("failed to kill realesrgan");
-        });
+    let stop_id = {
+        let window2 = window.clone();
+        let id = id.clone();
+        window
+            .lock()
+            .map_err(|e| e.to_string())?
+            .once(format!("{}stop", id), move |_| {
+                if let Err(e) = child.kill() {
+                    let _ = window2.lock().map(|window| window.emit(&id, e.to_string()));
+                }
+            })
+    };
     {
         let window = window.clone();
         tauri::async_runtime::spawn(async move {
             // read events such as stdout
             while let Some(event) = rx.recv().await {
                 match event {
-                    CommandEvent::Stderr(line) | CommandEvent::Stdout(line) => {
-                        window
-                            .lock()
-                            .expect("connot lock `window`")
-                            .emit(&id, line)
-                            .expect("failed to emit event");
+                    CommandEvent::Stderr(line)
+                    | CommandEvent::Stdout(line)
+                    | CommandEvent::Error(line) => {
+                        let _ = window.lock().map(|window| window.emit(&id, line));
                     }
-                    CommandEvent::Error(err) => {
-                        panic!("{err}");
+                    CommandEvent::Terminated(line) => {
+                        let _ = window.lock().map(|window| window.emit(&id, line));
                     }
                     _ => (),
                 }
