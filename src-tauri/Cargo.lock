@@ -2044,7 +2044,7 @@ dependencies = [
 
 [[package]]
 name = "realesrgan"
-version = "2.0.0"
+version = "2.0.4"
 dependencies = [
  "base64 0.21.1",
  "regex",

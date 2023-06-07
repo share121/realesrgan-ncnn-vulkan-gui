@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "realesrgan",
-    "version": "2.0.0"
+    "version": "2.0.4"
   },
   "tauri": {
     "allowlist": {
@@ -70,9 +70,7 @@
         "width": 430,
         "height": 700,
         "visible": false,
-        "center": true,
-        "minWidth": 430,
-        "minHeight": 40
+        "center": true
       }
     ]
   }

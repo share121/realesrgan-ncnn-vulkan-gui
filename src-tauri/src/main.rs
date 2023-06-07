@@ -27,7 +27,7 @@ async fn start_work(
 ) -> Result<(), String> {
     use regex::Regex;
     use std::sync::{Arc, Mutex};
-    use tauri::api::process::{Command, CommandEvent};
+    use tauri::api::process::{Command, CommandEvent, Encoding};
     let model_path = app_handle
         .path_resolver()
         .resolve_resource("resources/models/")
@@ -56,7 +56,7 @@ async fn start_work(
     #[cfg(windows)]
     let command = {
         use tauri::api::process::Encoding;
-        command.encoding(Encoding::for_label(b"gbk").ok_or("no gbk")?)
+        command.encoding(Encoding::for_label(b"gbk").ok_or("failed to set `encoding` to `gbk`")?)
     };
     let (mut rx, child) = command
         .spawn()
@@ -111,11 +111,10 @@ fn main() {
             {
                 use tauri::Manager;
                 use window_shadows::set_shadow;
-                set_shadow(
+                let _ = set_shadow(
                     &app.get_window("main").expect("cannot get window `main`"),
                     true,
-                )
-                .expect("unsupported platform!");
+                );
             }
             Ok(())
         })

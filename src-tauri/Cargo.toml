@@ -1,6 +1,6 @@
 [package]
 name = "realesrgan"
-version = "2.0.0"
+version = "2.0.4"
 description = "图像无损放大"
 authors = ["share121"]
 license = "MIT"
