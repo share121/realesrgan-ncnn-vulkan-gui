@@ -27,7 +27,7 @@ async fn start_work(
 ) -> Result<(), String> {
     use regex::Regex;
     use std::sync::{Arc, Mutex};
-    use tauri::api::process::{Command, CommandEvent, Encoding};
+    use tauri::api::process::{Command, CommandEvent};
     let model_path = app_handle
         .path_resolver()
         .resolve_resource("resources/models/")
