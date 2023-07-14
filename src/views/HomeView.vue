@@ -264,7 +264,7 @@ const toggleMaximize = useToggle(isMaximized)
           ref="fileInput"
           title="可批量上传、拖拽上传，支持视频、图片"
           type="file"
-          class="absolute left-0 top-0 h-full w-full cursor-pointer opacity-0"
+          class="absolute left-0 top-0 h-full w-full cursor-pointer opacity-0 file:cursor-pointer"
           multiple
           accept=".png,.jpg,.webp,.mp4"
         />
